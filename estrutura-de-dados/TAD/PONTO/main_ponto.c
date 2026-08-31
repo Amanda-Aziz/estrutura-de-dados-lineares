@@ -4,7 +4,7 @@
 int main(){
 
     Ponto p1 = criar(2, 2);
-    Ponto p2 = criar(5, 5);
+    Ponto p2 = criar(5, 17);
 
     float d = distancia(p1, p2);
     printf("A distancia entre os pontos é: %.2f\n", d);

@@ -16,6 +16,7 @@ Ponto criar(float x, float y){
     }
     return p;
 }
+
 float acessar(Ponto p, char valor){
     if(valor == 'x')
         return p->x;
@@ -23,6 +24,7 @@ float acessar(Ponto p, char valor){
         return p->y;
     return -1;    
 }
+
 int alterar(Ponto p, float dado, char valor){
     if(valor == 'x'){
         p->x = dado;
@@ -34,6 +36,7 @@ int alterar(Ponto p, float dado, char valor){
     }
     return -1;
 }
+
 void destruir(Ponto p){
     if(p != NULL)
         free(p);

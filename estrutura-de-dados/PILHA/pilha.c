@@ -1,20 +1,21 @@
-#include<stdlib.h>
-#include"pilha.h"
+// Implementação das funções da pilha
 
-struct pilha{ // stack
+#include <stdlib.h>
+#include "pilha.h"
+
+struct pilha{
     int dados[MAX];
     int topo;
 };
 
 Pilha criar(){
-    Pilha p = malloc(sizeof(struct pilha));
-    if(p != NULL){
-        p->topo = 0;
+    Pilha p = malloc(sizeof(struct pilha)); // alocando memória para a pilha
+    if(p != NULL){ //Verifica se a alocação deu certo (se não for NULL inica topo com 0)
+        p->topo = 0; //O operador '->' acessa o campo {topo} da estrutura apontada por p
     }
     return p;
 }
 
-// push
 int empilhar(Pilha p, int valor){
     if(p->topo < MAX){
         p->dados[p->topo] = valor;
@@ -23,22 +24,20 @@ int empilhar(Pilha p, int valor){
     }
     return 0;
 } 
-//peek
+
 int acessar_topo(Pilha p){
-    if(p->topo == 0) // piha vazia
-        return 0;
-    return p->dados[p->topo - 1];
+    if(p->topo == 0) // pilha vazia
+    return p->dados[p->topo - 1]; // Retorna o último elemento
 }
-// pop
+
 int desempilhar(Pilha p){
-    if(p->topo == 0) // piha vazia
+    if(p->topo == 0) // pilha vazia
         return 0;
-    p->topo--;
+    p->topo--; //diminui o topo (remove o último)
     return 1;
 } 
 
-// free
-void destruir(Pilha p) {
+void destruir(Pilha p) { //aqui liberamos a memoria
     if(p != NULL)
         free(p);
 }
