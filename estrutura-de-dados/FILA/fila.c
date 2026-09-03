@@ -57,12 +57,12 @@ int main(){
     printf("\nInicio da fila: %d", acessar_inicio(f));
 
     desenfileirar(f); //
-    printf("\nInicio da fila: %d", acessar_inicio(f));
+    printf("\nInicio da fila: %d\n", acessar_inicio(f));
 
     if(enfileirar(f, 50)){
-        printf("\nEnfileirou\n");
+        printf("Enfileirou\n");
     } else {
-        printf("\nNao enfileirou\n");
+        printf("Nao enfileirou\n");
     }
 
     return 0;
