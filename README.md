@@ -14,18 +14,64 @@
 
 ## 📖 Sobre o Repositório
 
-Este repositório documenta minha jornada de aprendizado em **Estrutura de Dados** utilizando a linguagem **C**. Aqui você encontrará implementações, exercícios e anotações sobre os principais conceitos da disciplina.
+Este repositório documenta minha jornada de aprendizado em **Estrutura de Dados Lineares** utilizando a linguagem **C**. Aqui você encontrará implementações, exercícios e anotações sobre os principais conceitos da disciplina.
 
-Todos os códigos foram desenvolvidos durante as aulas e estudos pessoais, servindo como material de consulta e prática.
+Todos os códigos foram desenvolvidos durante as aulas e estudos pessoais, servindo como material de consulta e prática. Vários módulos possuem também um arquivo `.md` próprio (`sobre_*.md`) com explicações detalhadas, linha a linha, da lógica por trás do código.
 
 ---
 
-## 🗂️ Conteúdo do Repositório
+## 🗂️ Estrutura do Repositório
+
+```
+estrutura-de-dados-lineares/
+└── estrutura-de-dados/
+    ├── exercicios-resolvidos/
+    │   ├── fila/
+    │   ├── pilha/
+    │   └── tad/
+    ├── FILA/
+    │   ├── fila.c
+    │   ├── fila.h
+    │   ├── main.c
+    │   └── sobre_fila.md
+    ├── LISTA-ENCADEADA/
+    │   ├── lista_int.c
+    │   ├── lista.h
+    │   └── main.c
+    ├── PILHA/
+    │   ├── main.c
+    │   ├── pilha.c
+    │   ├── pilha.h
+    │   └── sobre_pilha.md
+    ├── TAD/
+    │   ├── 1. Sobre o TAD/
+    │   │   ├── arquivo_de_leitura.md
+    │   │   ├── sobre_ponto.md
+    │   │   └── sobre_quadrado.md
+    │   ├── PONTO/
+    │   │   ├── main_ponto.c
+    │   │   ├── ponto.c
+    │   │   └── ponto.h
+    │   └── QUADRADO/
+    │       ├── main_quadrado.c
+    │       ├── main_vetor.c
+    │       ├── quadrado.c
+    │       └── quadrado.h
+    └── revisao.c
+```
+
+## 📂 Conteúdo do Repositório
 
 | Pasta | Descrição | Status |
 | :--- | :--- | :---: |
+| `FILA/` | Implementação de Fila (Queue) circular com vetor estático | ✅ |
 | `PILHA/` | Implementação de Pilha (Stack) com vetor estático | ✅ |
+| `LISTA-ENCADEADA/` | Implementação de Lista Encadeada de inteiros | ✅ |
 | `TAD/PONTO/` | Tipo Abstrato de Dados (TAD) - Ponto no plano cartesiano | ✅ |
+| `TAD/QUADRADO/` | Tipo Abstrato de Dados (TAD) - Quadrado, composto por Pontos | ✅ |
+| `TAD/1. Sobre o TAD/` | Anotações e explicações conceituais sobre TADs | ✅ |
+| `exercicios-resolvidos/` | Exercícios resolvidos de fila, pilha e TAD | 🚧 |
+| `revisao.c` | Revisão de conceitos base: stack x heap, ponteiros, passagem por valor/referência | ✅ |
 
 > **Status:** ✅ = Concluído | 🚧 = Em andamento | 📝 = Planejado
 
@@ -41,7 +87,6 @@ Todos os códigos foram desenvolvidos durante as aulas e estudos pessoais, servi
 ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
 
 </div>
-
 
 ---
 
@@ -59,7 +104,7 @@ Todos os códigos foram desenvolvidos durante as aulas e estudos pessoais, servi
 git clone https://github.com/Amanda-Aziz/estrutura-de-dados-lineares.git
 
 # 2. Entre na pasta do projeto
-cd estrutura-de-dados-lineares
+cd estrutura-de-dados-lineares/estrutura-de-dados
 
 # 3. Entre na pasta desejada (exemplo: PILHA)
 cd PILHA
@@ -72,3 +117,24 @@ gcc main.c pilha.c -o programa
 ./programa
 # Windows:
 programa.exe
+```
+
+> 💡 Cada pasta segue esse mesmo padrão: compile o `main.c` junto com o(s) arquivo(s) `.c` do módulo correspondente (ex: `fila.c`, `pilha.c`, `ponto.c` + `quadrado.c`, `lista_int.c`).
+
+---
+
+## 📝 Conceitos Estudados
+
+- 🧠 Stack vs Heap, ponteiros, passagem por valor e por referência
+- 🎯 TAD (Tipo Abstrato de Dados) e encapsulamento com structs opacas
+- 📦 Pilha (Stack) — LIFO
+- 🔄 Fila (Queue) circular — FIFO
+- 🔗 Lista Encadeada
+
+---
+
+<div align="center">
+
+Feito por [Amanda-Aziz](https://github.com/Amanda-Aziz) | disciplina de **Estrutura de Dados Lineares**
+
+</div>
