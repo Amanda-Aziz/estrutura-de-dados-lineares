@@ -1,5 +1,3 @@
-// Implementação das funções da pilha
-
 #include <stdlib.h>
 #include "pilha.h"
 
@@ -11,7 +9,7 @@ struct pilha{
 Pilha criar(){
     Pilha p = malloc(sizeof(struct pilha)); // alocando memória para a pilha
     if(p != NULL){ //Verifica se a alocação deu certo (se não for NULL inica topo com 0)
-        p->topo = 0; //O operador '->' acessa o campo {topo} da estrutura apontada por p
+        p->topo = 0; //O operador 'seta' acessa o campo {topo} da estrutura apontada por p
     }
     return p;
 }
@@ -26,13 +24,15 @@ int empilhar(Pilha p, int valor){
 } 
 
 int acessar_topo(Pilha p){
-    if(p->topo == 0) // pilha vazia
-    return p->dados[p->topo - 1]; // Retorna o último elemento
+    if(p->topo == 0){ // pilha vazia
+        return p->dados[p->topo - 1]; // Retorna o último elemento   
+    }
 }
 
 int desempilhar(Pilha p){
-    if(p->topo == 0) // pilha vazia
+    if(p->topo == 0){ // pilha vazia
         return 0;
+    }
     p->topo--; //diminui o topo (remove o último)
     return 1;
 } 

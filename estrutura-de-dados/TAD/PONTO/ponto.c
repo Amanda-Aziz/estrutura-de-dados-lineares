@@ -5,13 +5,12 @@ struct ponto{
     float x;
     float y;
 };
-
 typedef struct ponto* Ponto;
 
 Ponto criar(float x, float y){
     Ponto p = malloc(sizeof(struct ponto));
     if(p != NULL){
-        p->x = x;
+        p->x = x; //usa o operador seta porque p é um ponteiro — equivale a (*p).x = x
         p->y = y;
     }
     return p;
@@ -42,9 +41,10 @@ void destruir(Ponto p){
         free(p);
 }
 
-float distancia(Ponto p1, Ponto p2){
+float distancia(Ponto p1, Ponto p2){ //distância euclidiana entre dois pontos
     float dx = acessar(p1, 'x') - acessar(p2, 'x');
     float dy = acessar(p1, 'y') - acessar(p2, 'y');
+            // sqrt: raiz quadrada
     float h = sqrt(dx*dx + dy*dy);
     return h;
 }
