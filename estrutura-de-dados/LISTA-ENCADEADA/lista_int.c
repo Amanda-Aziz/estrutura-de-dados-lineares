@@ -2,7 +2,7 @@
 
 struct elem{
     int valor;
-    Elem* prox;
+    struct elem* prox;
 };
 typedef struct elem Elem;
 
@@ -77,6 +77,7 @@ void destruir(Lista li){
     //...
 }
 
+void imprimir_lista(Lista li){}
 void remover_final(){}
 int acessar_final(){}
 void buscar_por_valor(){}
