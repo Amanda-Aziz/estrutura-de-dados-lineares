@@ -73,12 +73,10 @@ int acessar_inicio(Lista li){
     return li->inicio->valor;
 }
 
-void destruir(Lista li){
-    //...
-}
-
-void imprimir_lista(Lista li){}
 void remover_final(){}
+
+void destruir(Lista li){}
+void imprimir_lista(Lista li){}
 int acessar_final(){}
 void buscar_por_valor(){}
 void buscar_por_posicao(){}
