@@ -12,6 +12,12 @@
 
 ---
 
+## 📚 Sobre a Disciplina
+
+**Estrutura de Dados Lineares** aborda os principais conceitos de organização, armazenamento e manipulação de dados na memória. A disciplina utiliza a linguagem **C** para trabalhar conceitos como **ponteiros, memória, structs e Tipos Abstratos de Dados (TADs)**, além da implementação de estruturas como **pilhas, filas e listas encadeadas**.
+
+O objetivo é compreender como diferentes estruturas podem ser utilizadas para armazenar e manipular dados de forma organizada e eficiente, desenvolvendo também o raciocínio sobre memória, operações e gerenciamento dos dados.
+
 ## 📖 Sobre o Repositório
 
 Este repositório documenta minha jornada de aprendizado em **Estrutura de Dados Lineares** utilizando a linguagem **C**. Aqui você encontrará implementações, exercícios e anotações sobre os principais conceitos da disciplina.
@@ -77,9 +83,9 @@ estrutura-de-dados-lineares/
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
-
 <div align="center">
+
+### 🛠️ Tecnologias Utilizadas
 
 ![C](https://img.shields.io/badge/C-00599C?style=for-the-badge&logo=c&logoColor=white)
 ![GCC](https://img.shields.io/badge/GCC-00599C?style=for-the-badge&logo=gnu&logoColor=white)
