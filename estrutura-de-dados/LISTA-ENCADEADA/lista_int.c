@@ -1,13 +1,14 @@
 #include <stdlib.h>
+#include "lista.h"
 
 struct elem {
     int valor;
-    struct elem *prox;
+    struct elem* prox;
 };
 
 struct lista {
     int qtd;
-    Elem inicio;
+    struct elem* inicio;
 };
 
 // Métodos
