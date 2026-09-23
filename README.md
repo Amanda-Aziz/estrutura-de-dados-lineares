@@ -1,6 +1,6 @@
 <div align="center">
 
-# 📚 Estrutura de Dados em C <img src="https://skillicons.dev/icons?i=c" />
+# 📚 Estrutura de Dados em <img src="https://skillicons.dev/icons?i=c" />
 
 **Minha jornada de aprendizado em Estrutura de Dados com a linguagem C**
 
