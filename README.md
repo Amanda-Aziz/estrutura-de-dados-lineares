@@ -43,7 +43,8 @@ estrutura-de-dados-lineares/
     ├── LISTA-ENCADEADA/
     │   ├── lista_int.c
     │   ├── lista.h
-    │   └── main.c
+    │   ├── main.c
+    │   └── sobre_lista_encadeada.md
     ├── PILHA/
     │   ├── main.c
     │   ├── pilha.c
