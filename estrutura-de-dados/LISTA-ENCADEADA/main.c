@@ -1,10 +1,25 @@
-#include"pilha.h"
-#include<stdio.h>
+#include "lista.h"
+#include <stdio.h>
 
-int main(){
+int main() {
+
     int valor;
+
     printf("Valor: ");
     scanf("%d", &valor);
-    criar_lista(&valor);
+
+    Lista li = criar_lista();
+
+    if (li == NULL) {
+        printf("Erro ao criar a lista.\n");
+        return 1;
+    }
+
+    inserir_inicio(li, valor);
+
+    printf("Primeiro elemento: %d\n", acessar_inicio(li));
+
+    destruir(li);
+
     return 0;
 }
