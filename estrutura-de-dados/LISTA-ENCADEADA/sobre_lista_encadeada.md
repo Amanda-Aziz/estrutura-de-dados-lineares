@@ -310,14 +310,3 @@ Primeiro elemento: 5
 | `ant` | `Elem` | Guarda o nó **anterior** ao `aux`, necessário em `remover_final` (lista simplesmente encadeada não anda "para trás") |
 | `atual` | `Elem` | Em `destruir`, guarda o nó a ser liberado antes de avançar `aux` |
 | `posicao` | `int` | Contador de índice, usado em `buscar_por_valor` |
-
----
-
-## Pontos de atenção
-
-1. **Nós alocados individualmente**: diferente da Pilha/Fila (um array fixo dentro da struct), aqui cada `inserir` chama um `malloc` novo. Isso dá flexibilidade de tamanho (sem `MAX`), mas exige mais cuidado ao liberar memória (um `free` por nó, não um `free` só).
-2. **Ordem dos ponteiros importa**: em `inserir_inicio`, é preciso ligar `no->prox` **antes** de mover `li->inicio`. Em `destruir`, é preciso avançar `aux` **antes** de liberar o nó atual. Trocar essa ordem causa perda de referência ou acesso a memória já liberada.
-3. **Lista simplesmente encadeada não anda "para trás"**: por isso `remover_final` precisa manter dois ponteiros (`ant` e `aux`) andando juntos, já que não existe um campo `anterior` no nó.
-4. **Custo de acesso ao final**: como não há um ponteiro direto para o último nó (só para o `inicio`), operações no final da lista (`inserir_final`, `remover_final`, `acessar_final`) são O(n), enquanto as do início são O(1).
-5. **Variável `ant` não inicializada em `remover_final`**: funciona corretamente por causa do tratamento prévio do caso "só 1 elemento", mas é uma boa prática inicializar ponteiros ao declará-los.
-6. **Include correto no `.h`/`.c`**: aqui `lista.h` só tem declarações (sem incluir `.c`), e `lista_int.c` inclui `lista.h` — essa é a forma correta de organizar TADs em C, evitando os problemas de inclusão circular vistos anteriormente.
