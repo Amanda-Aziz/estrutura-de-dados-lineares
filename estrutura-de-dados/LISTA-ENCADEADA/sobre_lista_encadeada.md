@@ -1,1364 +1,323 @@
-# TAD Lista Encadeada
+# Lista Encadeada (de inteiros)
 
 ## Visão geral
 
-O programa implementa uma **Lista Encadeada (Linked List)** utilizando **alocação dinâmica de memória**. Diferentemente de uma estrutura baseada em vetor, os elementos da lista são armazenados em nós independentes na memória, ligados uns aos outros por meio de ponteiros.
+O programa implementa uma **Lista Encadeada Simples** de inteiros. Diferente da Pilha e da Fila (que usavam um array fixo dentro da struct), aqui **cada elemento é um nó alocado individualmente no heap**, e os nós são conectados entre si por ponteiros (`prox`). Isso permite que a lista **cresça dinamicamente**, sem um limite `MAX` fixo como nos TADs anteriores.
 
-A lista utilizada é uma **lista simplesmente encadeada**, pois cada elemento possui um ponteiro que indica apenas o **próximo elemento** da sequência.
-
-As principais operações implementadas são:
-
-- `criar_lista` — cria e inicializa uma lista;
-- `inserir_inicio` — insere um elemento no início;
-- `inserir_final` — insere um elemento no final;
-- `remover_inicio` — remove o primeiro elemento;
-- `remover_final` — remove o último elemento;
-- `acessar_inicio` — retorna o primeiro elemento;
-- `acessar_final` — retorna o último elemento;
-- `buscar_por_valor` — procura um elemento pelo seu valor;
-- `buscar_por_posicao` — acessa um elemento através de sua posição;
-- `destruir` — libera a memória utilizada pela lista.
-
-A implementação utiliza `malloc()` para criar dinamicamente os nós e `free()` para liberar a memória quando os elementos são removidos ou quando a lista é destruída.
+As operações disponíveis são: `criar_lista`, `inserir_inicio`, `inserir_final`, `remover_inicio`, `remover_final`, `acessar_inicio`, `acessar_final`, `buscar_por_valor`, `buscar_por_posicao` e `destruir`.
 
 ---
 
-## Estrutura da lista
-
-A lista é formada por duas estruturas principais:
+## Estrutura de dados
 
 ```c
-struct elem{
-
+struct elem {
     int valor;
-
-    Elem* prox;
-
+    struct elem* prox;
 };
 
-typedef struct elem* Elem;
-```
-
-A estrutura `elem` representa **um nó da lista**.
-
-| Campo | Tipo | Significado |
-|---|---|---|
-| `valor` | `int` | Valor armazenado naquele nó |
-| `prox` | `Elem*` | Ponteiro para o próximo nó da lista |
-
-O campo `prox` é o que permite conectar os elementos.
-
-Por exemplo, uma lista contendo `10`, `20` e `30` pode ser representada conceitualmente assim:
-
-```text
-[10 | *] → [20 | *] → [30 | NULL]
-```
-
-O último elemento possui `prox = NULL`, indicando que não existe outro elemento depois dele.
-
----
-
-## Estrutura da lista
-
-Além dos nós, existe uma estrutura responsável por controlar a lista:
-
-```c
-struct lista{
-
+struct lista {
     int qtd;
-
-    Elem* inicio;
-
+    struct elem* inicio;
 };
 
-typedef struct lista* Lista;
-```
-
-| Campo | Tipo | Significado |
-|---|---|---|
-| `qtd` | `int` | Quantidade de elementos atualmente armazenados |
-| `inicio` | `Elem*` | Ponteiro para o primeiro nó da lista |
-
-Assim, a estrutura `Lista` não armazena diretamente todos os valores. Ela mantém apenas informações de controle e aponta para o primeiro nó.
-
-Por exemplo:
-
-```text
-Lista
- ├── qtd = 3
- └── inicio
-      ↓
-   [10 | *] → [20 | *] → [30 | NULL]
-```
-
-A partir de `inicio`, é possível percorrer todos os elementos seguindo os ponteiros `prox`.
-
----
-
-# Modularização
-
-A ideia da implementação é separar a lista em arquivos diferentes.
-
-## `lista.h`
-
-O arquivo `.h` deve funcionar como a **interface do TAD**, contendo as definições dos tipos e os protótipos das funções disponíveis.
-
-Por exemplo:
-
-```c
 typedef struct elem* Elem;
-
 typedef struct lista* Lista;
-
-Lista criar_lista();
-
-int inserir_inicio();
-int inserir_final();
-
-int remover_inicio();
-void remover_final();
-
-int acessar_inicio();
-int acessar_final();
-
-void buscar_por_valor();
-void buscar_por_posicao();
-
-void destruir();
 ```
 
-A ideia é que o código que utiliza a lista não precise conhecer todos os detalhes internos da implementação.
+| Campo | Onde | Tipo | Significado |
+|---|---|---|---|
+| `valor` | `struct elem` | `int` | O dado guardado naquele nó da lista |
+| `prox` | `struct elem` | `struct elem*` | Ponteiro para o **próximo nó** da lista (ou `NULL` se for o último) |
+| `qtd` | `struct lista` | `int` | Quantidade de elementos atualmente na lista |
+| `inicio` | `struct lista` | `struct elem*` | Ponteiro para o **primeiro nó** da lista (ou `NULL` se a lista estiver vazia) |
+
+Repare na diferença de conceito em relação à Pilha/Fila:
+- Lá, existia **uma struct só**, com um array fixo dentro.
+- Aqui, existem **duas structs**: `elem` (o nó individual) e `lista` (o "controlador", que só guarda o tamanho e o ponteiro para o primeiro nó).
+- A lista, como um todo, é uma **cadeia de nós** ligados por `prox`, e não um bloco contíguo de memória — cada nó pode estar em um endereço de memória completamente diferente.
+
+Assim como nos TADs anteriores, `Elem` e `Lista` são **structs opacas** (`typedef struct elem*`/`typedef struct lista*`) — quem usa o `.h` não enxerga os campos internos, só manipula através das funções.
 
 ---
 
-## `lista.c`
+## Função por função (`lista_int.c`)
 
-O arquivo `lista.c` contém a **implementação das operações** da lista.
-
-É nele que estão:
-
-- as estruturas `elem` e `lista`;
-- a alocação dos nós;
-- a inserção dos elementos;
-- a remoção;
-- as buscas;
-- o acesso aos elementos;
-- a liberação da memória.
-
----
-
-## `main.c`
-
-O `main.c` é responsável pelo programa principal e pela utilização das funções disponibilizadas pelo TAD.
-
-No código fornecido:
-
+### `criar_lista()`
 ```c
-#include "pilha.h"
-#include <stdio.h>
-
-int main(){
-
-    int valor;
-
-    printf("Valor: ");
-
-    scanf("%d", &valor);
-
-    criar_lista(&valor);
-
-    return 0;
-}
-```
-
-O programa solicita um valor ao usuário e depois tenta chamar `criar_lista()`.
-
-Entretanto, existem **inconsistências nesse arquivo**, explicadas mais adiante.
-
----
-
-# Função por função — `lista.c`
-
-## `criar_lista()`
-
-A função tem como objetivo criar uma nova estrutura de lista:
-
-```c
-Lista criar_lista(){
-
+Lista criar_lista() {
     Lista li = malloc(sizeof(struct lista));
 
-    if(li != NULL){
-
+    if (li != NULL) {
         li->qtd = 0;
         li->inicio = NULL;
-
     }
-
     return li;
 }
 ```
+- Aloca no heap **apenas a struct de controle** (`lista`), não os nós — os nós só vão existir quando você inserir algo.
+- `qtd = 0` e `inicio = NULL` representam uma lista vazia: nenhum elemento e nenhum "primeiro nó" para apontar.
 
-A ideia é:
-
-1. Alocar memória para a estrutura `lista`;
-2. Verificar se a alocação foi realizada;
-3. Inicializar a quantidade de elementos com `0`;
-4. Inicializar `inicio` com `NULL`;
-5. Retornar o endereço da lista criada.
-
-Uma lista recém-criada possui:
-
-```text
-qtd = 0
-inicio = NULL
-```
-
-Representação:
-
-```text
-Lista
- ├── qtd = 0
- └── inicio → NULL
-```
-
-Isso significa que a lista está vazia.
-
-### ⚠️ Problema no código fornecido
-
-No código enviado, a função aparece como:
-
+### `inserir_inicio(Lista li, int valor_inserir)`
 ```c
-Lista criar_lista(Lista li){
+int inserir_inicio(Lista li, int valor_inserir) {
+    Elem no = malloc(sizeof(struct elem));
 
-    Lista li = malloc(sizeof(struct lista));
-
-    ...
-}
-```
-
-Existe uma variável `li` sendo recebida como parâmetro e outra variável `li` sendo declarada dentro da função. Isso gera conflito.
-
-Além disso, o `main` chama:
-
-```c
-criar_lista(&valor);
-```
-
-O argumento passado é um `int*`, enquanto a função deveria receber nenhum argumento ou, dependendo da implementação escolhida, um ponteiro compatível com `Lista`.
-
-Portanto, a assinatura precisa ser corrigida antes de o programa funcionar.
-
----
-
-# `inserir_inicio(Lista li, int valor_inserir)`
-
-A função insere um novo elemento **antes do primeiro elemento atual**.
-
-A lógica é:
-
-```c
-int inserir_inicio(Lista li, int valor_inserir){
-
-    Elem* no = malloc(sizeof(Elem));
-
-    if(no != NULL){
-
+    if (no != NULL) {
         no->valor = valor_inserir;
         no->prox = li->inicio;
         li->inicio = no;
         li->qtd++;
-
         return 1;
     }
-
     return 0;
 }
 ```
+- Cria um **novo nó** (`no`) no heap.
+- `no->valor = valor_inserir`: guarda o dado recebido.
+- `no->prox = li->inicio`: o novo nó passa a apontar para quem **era** o primeiro nó da lista (antes da inserção).
+- `li->inicio = no`: agora o novo nó **é** o primeiro da lista.
+- Essa ordem (ligar o novo nó ao antigo início **antes** de atualizar `inicio`) é essencial — se fosse trocada, você perderia a referência ao resto da lista.
+- `li->qtd++`: atualiza a contagem.
+- Complexidade: **O(1)** — não importa o tamanho da lista, sempre é rápido, pois só mexe no início.
 
-O processo acontece da seguinte maneira:
-
-### 1. Alocação do novo nó
-
+### `inserir_final(Lista li, int valor_inserir)`
 ```c
-Elem* no = malloc(sizeof(Elem));
-```
-
-É solicitada memória para armazenar o novo elemento.
-
-### 2. Armazenamento do valor
-
-```c
-no->valor = valor_inserir;
-```
-
-O valor recebido é colocado dentro do novo nó.
-
-### 3. Ligação com o antigo primeiro elemento
-
-```c
-no->prox = li->inicio;
-```
-
-O novo nó passa a apontar para o antigo primeiro elemento.
-
-### 4. Atualização do início
-
-```c
-li->inicio = no;
-```
-
-Agora o novo nó passa a ser o primeiro da lista.
-
-### 5. Atualização da quantidade
-
-```c
-li->qtd++;
-```
-
-A quantidade de elementos aumenta em uma unidade.
-
-### Exemplo
-
-Antes:
-
-```text
-inicio
-  ↓
-[20] → [30] → NULL
-```
-
-Inserindo `10` no início:
-
-```text
-inicio
-  ↓
-[10] → [20] → [30] → NULL
-```
-
-A inserção no início é eficiente porque não é necessário percorrer a lista.
-
-**Complexidade:** `O(1)`.
-
----
-
-# `inserir_final(Lista li, int valor_inserir)`
-
-Essa função adiciona um novo elemento ao **final da lista**.
-
-A ideia é:
-
-```c
-int inserir_final(Lista li, int valor_inserir){
-
-    Elem* no = malloc(sizeof(Elem));
-
-    if(no != NULL){
-
+int inserir_final(Lista li, int valor_inserir) {
+    Elem no = malloc(sizeof(struct elem));
+    if (no != NULL) {
         no->valor = valor_inserir;
         no->prox = NULL;
-
-        if(li->inicio == NULL){
-
+        if (li->inicio == NULL) {
             li->inicio = no;
             li->qtd++;
-
             return 1;
         }
 
-        Elem* aux = li->inicio;
+        Elem aux = li->inicio;
 
-        while(aux->prox != NULL){
-
+        while (aux->prox != NULL) {
             aux = aux->prox;
         }
 
         aux->prox = no;
         li->qtd++;
-
         return 1;
     }
-
     return 0;
 }
 ```
+- Cria o novo nó, com `prox = NULL` (já que ele será o último).
+- **Caso especial**: se a lista está vazia (`li->inicio == NULL`), o novo nó passa a ser diretamente o `inicio`.
+- **Caso geral**: usa uma variável auxiliar `aux` para **percorrer a lista** a partir do `inicio`, andando nó por nó (`aux = aux->prox`) até achar o **último nó** (aquele cujo `prox` é `NULL`).
+- Uma vez encontrado o último nó, `aux->prox = no` conecta o novo nó ao final da cadeia.
+- Complexidade: **O(n)** — diferente da inserção no início, aqui é necessário percorrer a lista inteira até o fim.
 
-O novo nó recebe:
-
+### `remover_inicio(Lista li)`
 ```c
-no->prox = NULL;
-```
-
-Isso acontece porque ele será o último elemento.
-
-Depois, caso a lista não esteja vazia, utiliza-se um ponteiro auxiliar:
-
-```c
-Elem* aux = li->inicio;
-```
-
-Esse ponteiro percorre a lista:
-
-```c
-while(aux->prox != NULL){
-
-    aux = aux->prox;
-}
-```
-
-Quando o laço termina, `aux` aponta para o último nó.
-
-Então:
-
-```c
-aux->prox = no;
-```
-
-liga o último elemento antigo ao novo elemento.
-
-### Exemplo
-
-Antes:
-
-```text
-[10] → [20] → [30] → NULL
-```
-
-Inserindo `40`:
-
-```text
-[10] → [20] → [30] → [40] → NULL
-```
-
-Como é necessário percorrer a lista até o último elemento:
-
-**Complexidade:** `O(n)`.
-
----
-
-# `remover_inicio(Lista li)`
-
-Remove o primeiro elemento da lista.
-
-A lógica é:
-
-```c
-int remover_inicio(Lista li){
-
-    if(li->qtd == 0)
+int remover_inicio(Lista li) {
+    if (li->qtd == 0)
         return 0;
 
-    Elem* aux = li->inicio;
-
+    Elem aux = li->inicio;
     li->inicio = aux->prox;
-
     free(aux);
-
     li->qtd--;
-
     return 1;
 }
 ```
+- Se a lista está vazia (`qtd == 0`), não há o que remover — retorna `0`.
+- Guarda o nó atual do início em `aux` (para não perder a referência antes de liberá-lo).
+- `li->inicio = aux->prox`: o segundo nó passa a ser o novo início.
+- `free(aux)`: libera a memória do nó removido.
+- Complexidade: **O(1)**.
 
-Primeiro verifica se a lista está vazia:
-
+### `acessar_inicio(Lista li)`
 ```c
-if(li->qtd == 0)
-    return 0;
-```
-
-Se houver elementos, `aux` guarda o primeiro nó:
-
-```c
-Elem* aux = li->inicio;
-```
-
-Depois, o início passa a apontar para o segundo elemento:
-
-```c
-li->inicio = aux->prox;
-```
-
-Por fim, o antigo primeiro nó é liberado:
-
-```c
-free(aux);
-```
-
-### Exemplo
-
-Antes:
-
-```text
-inicio
-  ↓
-[10] → [20] → [30] → NULL
-```
-
-Depois de remover o início:
-
-```text
-inicio
-  ↓
-[20] → [30] → NULL
-```
-
-O nó contendo `10` é liberado da memória.
-
-**Complexidade:** `O(1)`.
-
----
-
-# `acessar_inicio(Lista li)`
-
-Retorna o valor armazenado no primeiro elemento.
-
-```c
-int acessar_inicio(Lista li){
-
-    if(li->qtd == 0)
-        return 0;
-
+int acessar_inicio(Lista li) {
+    if (li->qtd == 0)
+        return -1;
     return li->inicio->valor;
 }
 ```
+- Se vazia, retorna `-1` (indicador de erro).
+- Caso contrário, retorna o valor guardado no primeiro nó — repare no encadeamento `li->inicio->valor`: primeiro acessa o campo `inicio` da lista (que é um ponteiro para `elem`), depois acessa o campo `valor` desse nó.
 
-Primeiro verifica se a lista está vazia.
-
-Se não estiver, acessa:
-
+### `remover_final(Lista li)`
 ```c
-li->inicio->valor
-```
+int remover_final(Lista li) {
+    if (li->qtd == 0)
+        return 0;
+    Elem aux = li->inicio;
 
-Ou seja:
-
-1. `li->inicio` → primeiro nó;
-2. `->valor` → valor armazenado nesse nó.
-
-### Exemplo
-
-```text
-inicio
-  ↓
-[50] → [80] → [100] → NULL
-```
-
-`acessar_inicio()` retorna:
-
-```text
-50
-```
-
-**Complexidade:** `O(1)`.
-
----
-
-# `remover_final(Lista li)`
-
-Remove o último elemento da lista.
-
-A função precisa tratar dois casos:
-
-1. Lista com apenas um elemento;
-2. Lista com dois ou mais elementos.
-
-Para uma lista com apenas um elemento:
-
-```text
-[10] → NULL
-```
-
-o `inicio` precisa ser atualizado para `NULL`.
-
-Para uma lista maior, é necessário encontrar o último nó e também guardar o nó anterior a ele.
-
-A lógica utilizada é:
-
-```c
-Elem* aux = li->inicio;
-Elem* ant;
-
-while(aux->prox != NULL){
-
-    ant = aux;
-    aux = aux->prox;
+    // Caso exista apenas um elemento
+    if (aux->prox == NULL) {
+        free(aux);
+        li->inicio = NULL;
+        li->qtd--;
+        return 1;
+    }
+    Elem ant;
+    while (aux->prox != NULL) {
+        ant = aux;
+        aux = aux->prox;
+    }
+    free(aux);
+    ant->prox = NULL;
+    li->qtd--;
+    return 1;
 }
 ```
+- Se vazia, retorna `0`.
+- **Caso especial (só 1 elemento)**: se o próprio `inicio` já é o último nó (`aux->prox == NULL`), basta liberá-lo e zerar `li->inicio`.
+- **Caso geral**: aqui é preciso manter **dois ponteiros andando juntos**: `ant` (o penúltimo nó) e `aux` (o último nó). Isso é necessário porque, numa lista **simplesmente encadeada**, não dá para "andar para trás" a partir do último nó — não existe um ponteiro `anterior`. Por isso, ao encontrar o último nó, você precisa já ter guardado uma referência a quem vem antes dele.
+- Ao final do laço, `aux` é o último nó e `ant` é o penúltimo.
+- `free(aux)` libera o último nó, e `ant->prox = NULL` faz o penúltimo nó (agora o novo último) apontar para `NULL`.
+- Complexidade: **O(n)** — precisa percorrer a lista inteira.
 
-Ao final:
+> ⚠️ **Ponto de atenção sobre `ant`**: a variável `ant` é declarada (`Elem ant;`) mas **não inicializada**. Isso só não causa problema aqui porque o `if (aux->prox == NULL)` acima já trata o caso de 1 elemento separadamente — ou seja, se o laço `while` executa, é garantido que ele roda **pelo menos uma vez** antes de `aux` chegar ao fim, então `ant` sempre recebe um valor válido antes de ser usado. Ainda assim, é uma boa prática inicializar variáveis ao declará-las, para evitar esse tipo de raciocínio "funciona, mas por pouco".
 
-```text
-ant → penúltimo nó
-aux → último nó
-```
-
-Depois:
-
+### `acessar_final(Lista li)`
 ```c
-free(aux);
-ant->prox = NULL;
+int acessar_final(Lista li) {
+    if (li->qtd == 0)
+        return -1;
+    Elem aux = li->inicio;
+    while (aux->prox != NULL) {
+        aux = aux->prox;
+    }
+    return aux->valor;
+}
 ```
+- Se vazia, retorna `-1`.
+- Caso contrário, percorre a lista até o último nó (mesma lógica de "andar" vista em `inserir_final`) e retorna o valor dele.
+- Complexidade: **O(n)** — é o preço de não ter um ponteiro direto para o "fim" da lista (diferente de `inicio`, que é guardado explicitamente na struct `lista`).
 
-O último nó é liberado e o penúltimo passa a ser o último.
-
-### Exemplo
-
-Antes:
-
-```text
-[10] → [20] → [30] → NULL
-```
-
-Depois:
-
-```text
-[10] → [20] → NULL
-```
-
-**Complexidade:** `O(n)`.
-
----
-
-# `acessar_final(Lista li)`
-
-Retorna o valor armazenado no último elemento.
-
+### `buscar_por_valor(Lista li, int valor)`
 ```c
-int acessar_final(Lista li){
+int buscar_por_valor(Lista li, int valor) {
+    Elem aux = li->inicio;
+    int posicao = 0;
 
-    if(li->qtd == 0){
-        return 0;
+    while (aux != NULL) {
+        if (aux->valor == valor) {
+            return posicao;
+        }
+        aux = aux->prox;
+        posicao++;
     }
 
-    Elem* aux = li->inicio;
+    return -1;
+}
+```
+- Percorre a lista do início ao fim, comparando `aux->valor` com o `valor` procurado.
+- `posicao` é um contador que acompanha o índice do nó atual (começando em `0`).
+- Se encontrar, retorna a **posição** (índice) onde o valor está.
+- Se chegar ao fim (`aux == NULL`) sem encontrar, retorna `-1`.
+- Complexidade: **O(n)** no pior caso (busca sequencial, sem atalhos).
 
-    while(aux->prox != NULL){
+### `buscar_por_posicao(Lista li, int posicao)`
+```c
+int buscar_por_posicao(Lista li, int posicao) {
+    if (posicao < 0 || posicao >= li->qtd)
+        return -1;
 
+    Elem aux = li->inicio;
+
+    for (int i = 0; i < posicao; i++) {
         aux = aux->prox;
     }
 
     return aux->valor;
 }
 ```
+- Primeiro valida se a posição pedida é válida (`0 <= posicao < qtd`) — evita andar além do fim da lista.
+- Anda `posicao` vezes a partir do início, usando `aux = aux->prox`.
+- Retorna o valor do nó encontrado nessa posição.
+- Complexidade: **O(n)** — diferente de um array, onde acessar por posição é O(1), numa lista encadeada é sempre necessário "andar" nó por nó até chegar lá.
 
-O ponteiro `aux` começa no primeiro elemento e percorre a lista até encontrar um nó cujo `prox` seja `NULL`.
-
-Esse é o último elemento.
-
-### Exemplo
-
-```text
-[10] → [20] → [30] → NULL
-                         ↑
-                       final
-```
-
-A função retorna:
-
-```text
-30
-```
-
-Como precisa percorrer os nós:
-
-**Complexidade:** `O(n)`.
-
----
-
-# `buscar_por_valor(Lista li, int valor)`
-
-Essa função percorre a lista procurando um determinado valor.
-
+### `destruir(Lista li)`
 ```c
-Elem* aux = li->inicio;
-int posicao = 0;
-
-while(aux != NULL){
-
-    if(aux->valor == valor){
-
-        return posicao;
+void destruir(Lista li) {
+    if (li == NULL)
+        return;
+    Elem aux = li->inicio;
+    while (aux != NULL) {
+        Elem atual = aux;
+        aux = aux->prox;
+        free(atual);
     }
-
-    aux = aux->prox;
-    posicao++;
-}
-
-return 0;
-```
-
-A variável `posicao` começa em `0`.
-
-Por exemplo:
-
-```text
-posição:   0       1       2
-          ↓       ↓       ↓
-        [10] → [20] → [30] → NULL
-```
-
-Se for procurado o valor `20`, a função retorna:
-
-```text
-1
-```
-
-Se for procurado `30`:
-
-```text
-2
-```
-
-### ⚠️ Problema importante
-
-O código retorna `0` quando o valor não é encontrado:
-
-```c
-return 0;
-```
-
-Porém, `0` também é uma posição válida.
-
-Por exemplo, se o valor procurado estiver no primeiro nó:
-
-```text
-[10] → [20] → [30]
- ↑
-posição 0
-```
-
-a função também retorna `0`.
-
-Portanto, não é possível distinguir:
-
-```text
-0 → elemento encontrado na posição 0
-```
-
-de:
-
-```text
-0 → elemento não encontrado
-```
-
-Uma solução comum seria retornar `-1` quando o valor não for encontrado:
-
-```c
-return -1;
-```
-
-Assim:
-
-```text
-posição >= 0 → encontrado
--1            → não encontrado
-```
-
-**Complexidade:** `O(n)`.
-
----
-
-# `buscar_por_posicao(Lista li, int posicao)`
-
-Essa função procura um elemento através de sua posição.
-
-Primeiro verifica se a posição é válida:
-
-```c
-if(posicao < 0 || posicao >= li->qtd){
-
-    return 0;
+    free(li);
 }
 ```
-
-A primeira posição da lista é `0`.
-
-Por exemplo, em uma lista com quatro elementos:
-
-```text
-posição:   0      1      2      3
-          ↓      ↓      ↓      ↓
-        [10] → [20] → [30] → [40]
-```
-
-As posições válidas são:
-
-```text
-0, 1, 2 e 3
-```
-
-Depois, a função percorre a lista:
-
-```c
-Elem* aux = li->inicio;
-
-for(int i = 0; i < posicao; i++){
-
-    aux = aux->prox;
-}
-```
-
-Quando o laço termina, `aux` aponta para o nó correspondente à posição solicitada.
-
-Finalmente:
-
-```c
-return aux->valor;
-```
-
-retorna seu valor.
-
-### Exemplo
-
-Para:
-
-```c
-buscar_por_posicao(li, 2);
-```
-
-a função percorre:
-
-```text
-[10] → [20] → [30] → [40]
-               ↑
-             posição 2
-```
-
-e retorna:
-
-```text
-30
-```
-
-**Complexidade:** `O(n)`.
+- Verifica se `li` não é `NULL` (evita erro ao tentar destruir uma lista que nem foi criada).
+- Percorre **todos os nós** da lista, liberando um por um:
+  - `atual = aux` guarda o nó a ser liberado.
+  - `aux = aux->prox` avanha para o próximo nó **antes** de liberar `atual` — essa ordem é crucial: se você chamasse `free(aux)` e só depois tentasse `aux = aux->prox`, estaria acessando memória já liberada (comportamento indefinido).
+  - `free(atual)` libera o nó atual.
+- Por fim, `free(li)` libera a struct de controle da lista.
+- Diferente da Pilha/Fila (onde um único `free` bastava, pois tudo estava numa struct só), aqui é necessário **um laço de liberação**, porque cada nó foi alocado separadamente com seu próprio `malloc`.
 
 ---
 
-# `destruir(Lista li)`
-
-A função `destruir()` tem como objetivo liberar toda a memória utilizada pela lista.
-
-Uma lista encadeada utiliza memória dinâmica para cada nó. Portanto, não basta liberar apenas a estrutura `Lista`: todos os nós também precisam ser liberados.
-
-A ideia do processo é percorrer a lista e liberar cada elemento:
-
-```text
-[10] → [20] → [30] → NULL
-```
-
-Primeiro libera `10`, depois `20` e finalmente `30`.
-
-Depois de todos os nós serem liberados, a própria estrutura da lista pode ser liberada:
-
-```c
-free(li);
-```
-
-### ⚠️ Problema no código fornecido
-
-O código apresenta:
-
-```c
-Elem* aux = li->inicio;
-
-while(aux->prox != NULL){
-
-    Elem* atual = aux;
-
-    aux = aux->prox;
-
-    free(atual);
-}
-
-free(aux);
-free(li);
-```
-
-A lógica funciona para uma lista não vazia, pois os nós são liberados um por um e o último é liberado depois do `while`.
-
-Entretanto, existe um problema quando a lista está vazia.
-
-Se:
-
-```c
-li->inicio == NULL
-```
-
-então:
-
-```c
-Elem* aux = li->inicio;
-```
-
-faz `aux` receber `NULL`.
-
-Logo, a condição:
-
-```c
-while(aux->prox != NULL)
-```
-
-tenta acessar `prox` através de um ponteiro `NULL`.
-
-Isso pode causar **comportamento indefinido**.
-
-Uma forma mais segura de percorrer seria:
-
-```c
-Elem* aux = li->inicio;
-
-while(aux != NULL){
-
-    Elem* atual = aux;
-    aux = aux->prox;
-
-    free(atual);
-}
-
-free(li);
-```
-
-Dessa maneira, o laço termina naturalmente quando `aux` chegar a `NULL`.
-
----
-
-# Simulação de uma lista
-
-Considere a seguinte sequência de operações:
-
-```text
-criar_lista()
-inserir_inicio(20)
-inserir_inicio(10)
-inserir_final(30)
-inserir_final(40)
-remover_inicio()
-```
-
-### 1. `criar_lista()`
-
-```text
-qtd = 0
-
-inicio
-  ↓
- NULL
-```
-
----
-
-### 2. `inserir_inicio(20)`
-
-```text
-qtd = 1
-
-inicio
-  ↓
-[20] → NULL
-```
-
----
-
-### 3. `inserir_inicio(10)`
-
-O novo nó aponta para o antigo início:
-
-```text
-inicio
-  ↓
-[10] → [20] → NULL
-```
-
-`qtd = 2`.
-
----
-
-### 4. `inserir_final(30)`
-
-O programa percorre a lista até o último elemento e adiciona `30`:
-
-```text
-inicio
-  ↓
-[10] → [20] → [30] → NULL
-```
-
-`qtd = 3`.
-
----
-
-### 5. `inserir_final(40)`
-
-```text
-inicio
-  ↓
-[10] → [20] → [30] → [40] → NULL
-```
-
-`qtd = 4`.
-
----
-
-### 6. `remover_inicio()`
-
-O primeiro nó é removido:
-
-```text
-inicio
-  ↓
-[20] → [30] → [40] → NULL
-```
-
-`qtd = 3`.
-
-O nó contendo `10` é liberado com `free()`.
-
----
-
-# Resumo das operações
-
-| Operação | Função | Complexidade | Descrição |
-|---|---|---:|---|
-| Criar | `criar_lista()` | `O(1)` | Cria e inicializa a lista |
-| Inserir no início | `inserir_inicio()` | `O(1)` | Adiciona um nó antes do primeiro |
-| Inserir no final | `inserir_final()` | `O(n)` | Percorre até o último nó e insere |
-| Remover início | `remover_inicio()` | `O(1)` | Remove o primeiro nó |
-| Remover final | `remover_final()` | `O(n)` | Percorre até o último nó e o remove |
-| Acessar início | `acessar_inicio()` | `O(1)` | Retorna o primeiro valor |
-| Acessar final | `acessar_final()` | `O(n)` | Percorre até o último e retorna o valor |
-| Buscar valor | `buscar_por_valor()` | `O(n)` | Procura um valor na lista |
-| Buscar posição | `buscar_por_posicao()` | `O(n)` | Percorre até a posição desejada |
-| Destruir | `destruir()` | `O(n)` | Libera todos os nós e a lista |
-
----
-
-# Problemas encontrados na implementação
-
-Além da lógica da lista, os arquivos fornecidos apresentam algumas inconsistências que precisam ser corrigidas.
-
-## 1. Inclusão do arquivo incorreto
-
-O `lista.h` possui:
-
-```c
-#include "lista_int.c"
-```
-
-Mas o arquivo apresentado é:
-
-```text
-lista.c
-```
-
-Além disso, normalmente o `.h` não deve incluir diretamente o arquivo `.c`.
-
-A organização recomendada é:
-
-```text
-lista.h
-    ↑
-lista.c
-    ↑
-main.c
-```
-
-Ou seja, `lista.c` inclui `lista.h`, enquanto `main.c` também inclui `lista.h`.
-
----
-
-## 2. `main.c` inclui `pilha.h`
-
-O código apresenta:
-
-```c
-#include "pilha.h"
-```
-
-Porém, o programa implementado é uma lista.
-
-O esperado seria:
-
-```c
-#include "lista.h"
-```
-
----
-
-## 3. Protótipos incompletos
-
-No `lista.h` aparecem declarações como:
-
-```c
-int inserir_inicio();
-int inserir_final();
-```
-
-Porém, em `lista.c`, as funções recebem parâmetros.
-
-O cabeçalho deve declarar os parâmetros corretamente, por exemplo:
-
-```c
-int inserir_inicio(Lista li, int valor_inserir);
-int inserir_final(Lista li, int valor_inserir);
-```
-
-Isso permite que o compilador verifique se as chamadas das funções estão sendo feitas corretamente.
-
----
-
-## 4. Tipos de retorno diferentes
-
-Em `lista.c`:
-
-```c
-int remover_final(...)
-```
-
-mas em `lista.h`:
-
-```c
-void remover_final();
-```
-
-Essas declarações são incompatíveis.
-
-O tipo de retorno precisa ser o mesmo nos dois arquivos.
-
-O mesmo problema ocorre com:
-
-```text
-buscar_por_valor()
-buscar_por_posicao()
-```
-
-que retornam `int` na implementação, mas aparecem como `void` no cabeçalho.
-
----
-
-## 5. Problema na chamada de `criar_lista()`
-
-O `main` faz:
+## Simulando o `main.c` passo a passo
 
 ```c
 int valor;
+printf("Valor: ");
+scanf("%d", &valor);          // usuário digita, por ex., 5
 
-scanf("%d", &valor);
+Lista li = criar_lista();     // li->qtd = 0, li->inicio = NULL
 
-criar_lista(&valor);
+inserir_inicio(li, valor);    // cria nó {valor: 5, prox: NULL}
+                               // li->inicio aponta para esse nó
+                               // li->qtd = 1
+
+printf("Primeiro elemento: %d\n", acessar_inicio(li));
+                               // li->qtd != 0 -> retorna li->inicio->valor = 5
+
+destruir(li);                 // libera o nó e a struct lista
 ```
 
-O valor lido pelo usuário não deveria ser passado para a criação da lista, pois criar uma lista e inserir um valor são operações diferentes.
-
-A ideia normalmente seria:
-
-```c
-Lista li = criar_lista();
+**Saída esperada (para entrada `5`):**
+```
+Valor: 5
+Primeiro elemento: 5
 ```
 
-e depois:
-
-```c
-inserir_inicio(li, valor);
-```
-
-Assim:
-
-```text
-criar_lista()
-      ↓
-lista vazia
-      ↓
-inserir_inicio(li, valor)
-      ↓
-lista com o valor
-```
+| Passo | `li->inicio` | `li->qtd` | Observação |
+|---|---|---|---|
+| `criar_lista()` | `NULL` | 0 | lista vazia |
+| `inserir_inicio(li, 5)` | nó `{5, NULL}` | 1 | único nó, também é o início |
+| `acessar_inicio(li)` | — | 1 | retorna `5` |
+| `destruir(li)` | — | — | nó liberado, depois a struct `lista` liberada |
 
 ---
 
-# Fluxo conceitual do programa
+## Variáveis do `main`
 
-A utilização correta do TAD pode ser entendida através do seguinte fluxo:
+| Variável | Tipo | Para que serve |
+|---|---|---|
+| `valor` | `int` | Guarda o número digitado pelo usuário |
+| `li` | `Lista` (ponteiro) | Representa a lista encadeada alocada dinamicamente |
 
-```text
-             criar_lista()
-                   ↓
-             Lista vazia
-                   ↓
-        ┌──────────┴──────────┐
-        ↓                     ↓
-inserir_inicio()       inserir_final()
-        ↓                     ↓
-        └──────────┬──────────┘
-                   ↓
-              Lista criada
-                   ↓
-        ┌──────────┼──────────┐
-        ↓          ↓          ↓
-     acessar    buscar     remover
-        ↓          ↓          ↓
-        └──────────┼──────────┘
-                   ↓
-               destruir()
-                   ↓
-             Memória liberada
-```
+## Variáveis auxiliares mais usadas dentro das funções
+
+| Variável | Tipo | Para que serve |
+|---|---|---|
+| `no` | `Elem` | O novo nó recém-alocado, a ser inserido na lista |
+| `aux` | `Elem` | Ponteiro "andarilho", usado para percorrer a lista nó a nó |
+| `ant` | `Elem` | Guarda o nó **anterior** ao `aux`, necessário em `remover_final` (lista simplesmente encadeada não anda "para trás") |
+| `atual` | `Elem` | Em `destruir`, guarda o nó a ser liberado antes de avançar `aux` |
+| `posicao` | `int` | Contador de índice, usado em `buscar_por_valor` |
 
 ---
 
-# Conceitos importantes
+## Pontos de atenção
 
-## Lista encadeada
-
-Uma lista encadeada é uma estrutura dinâmica formada por nós.
-
-Cada nó contém:
-
-```text
-dado + ponteiro
-```
-
-No caso desta implementação:
-
-```c
-struct elem{
-
-    int valor;
-    Elem* prox;
-
-};
-```
-
-O `valor` guarda o dado e `prox` permite chegar ao próximo nó.
-
----
-
-## Alocação dinâmica
-
-Os nós são criados utilizando:
-
-```c
-malloc()
-```
-
-Isso permite que a lista cresça dinamicamente durante a execução do programa.
-
-Quando um nó não é mais necessário, sua memória deve ser liberada usando:
-
-```c
-free()
-```
-
----
-
-## Ponteiro `NULL`
-
-O último elemento da lista possui:
-
-```c
-prox = NULL;
-```
-
-Isso indica o final da sequência.
-
-Por isso, muitos percursos utilizam:
-
-```c
-while(aux != NULL)
-```
-
-ou:
-
-```c
-while(aux->prox != NULL)
-```
-
-dependendo do objetivo do percurso.
-
----
-
-## Tamanho da lista
-
-A variável:
-
-```c
-qtd
-```
-
-mantém a quantidade atual de elementos.
-
-Por exemplo:
-
-```text
-Lista vazia:
-
-qtd = 0
-
-[NULL]
-```
-
-Depois de três inserções:
-
-```text
-qtd = 3
-
-[10] → [20] → [30] → NULL
-```
-
-Manter `qtd` permite verificar rapidamente se a lista está vazia e validar posições.
-
----
-
-# Organização esperada dos arquivos
-
-Uma organização adequada para o projeto seria:
-
-```text
-projeto/
-│
-├── lista.h
-├── lista.c
-└── main.c
-```
-
-### `lista.h`
-
-Interface da lista:
-
-```text
-Tipos
-↓
-Protótipos das funções
-```
-
-### `lista.c`
-
-Implementação:
-
-```text
-Structs
-↓
-Funções
-↓
-Manipulação dos nós
-↓
-Alocação/liberação de memória
-```
-
-### `main.c`
-
-Utilização:
-
-```text
-Entrada de dados
-↓
-Criação da lista
-↓
-Chamadas das operações
-↓
-Exibição dos resultados
-↓
-Destruição da lista
-```
-
-Essa separação facilita a organização do código e permite que a implementação da lista fique isolada do programa que a utiliza.
+1. **Nós alocados individualmente**: diferente da Pilha/Fila (um array fixo dentro da struct), aqui cada `inserir` chama um `malloc` novo. Isso dá flexibilidade de tamanho (sem `MAX`), mas exige mais cuidado ao liberar memória (um `free` por nó, não um `free` só).
+2. **Ordem dos ponteiros importa**: em `inserir_inicio`, é preciso ligar `no->prox` **antes** de mover `li->inicio`. Em `destruir`, é preciso avançar `aux` **antes** de liberar o nó atual. Trocar essa ordem causa perda de referência ou acesso a memória já liberada.
+3. **Lista simplesmente encadeada não anda "para trás"**: por isso `remover_final` precisa manter dois ponteiros (`ant` e `aux`) andando juntos, já que não existe um campo `anterior` no nó.
+4. **Custo de acesso ao final**: como não há um ponteiro direto para o último nó (só para o `inicio`), operações no final da lista (`inserir_final`, `remover_final`, `acessar_final`) são O(n), enquanto as do início são O(1).
+5. **Variável `ant` não inicializada em `remover_final`**: funciona corretamente por causa do tratamento prévio do caso "só 1 elemento", mas é uma boa prática inicializar ponteiros ao declará-los.
+6. **Include correto no `.h`/`.c`**: aqui `lista.h` só tem declarações (sem incluir `.c`), e `lista_int.c` inclui `lista.h` — essa é a forma correta de organizar TADs em C, evitando os problemas de inclusão circular vistos anteriormente.
